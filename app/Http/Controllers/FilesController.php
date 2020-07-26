@@ -16,6 +16,8 @@ class FilesController extends Controller
         if ($request->hasFile("files")) {
             $this->storeFiles($request->key, ...$request->file("files"));
         }
+
+		return response()->json(["status" => "ok"]);
     }
 
     public function validateFileUploadRequest(Request $request)
