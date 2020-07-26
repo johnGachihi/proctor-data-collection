@@ -43,6 +43,7 @@ class FilesControllerTest extends TestCase
         ]);
 
         $response->assertOk();
+        $response->assertJson(["status" => "ok"]);
         Storage::disk("data")->assertExists("a-uuid-string/ble1.webm");
     }
 
@@ -59,7 +60,66 @@ class FilesControllerTest extends TestCase
         ]);
 
         $response->assertOk();
+        $response->assertJson(["status" => "ok"]);
         Storage::disk("data")->assertExists("a-uuid-string/ble1.webm");
         Storage::disk("data")->assertExists("a-uuid-string/ble2.webm");
+    }
+
+    public function test_saveFileChunk_withoutKeyParam()
+    {
+        Storage::fake("data");
+
+        $response = $this->json("POST", "api/file-chunk", [
+            "chunk" => UploadedFile::fake()->createWithContent("ble.webm", "abcdef")
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_saveFileChunk_withoutChunkParam()
+    {
+        Storage::fake("data");
+
+        $response = $this->json("POST", "api/file-chunk", [
+            "key" => "a-uuid-string",
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_saveFileChunk_withChunkParamThatIsNotFile()
+    {
+        Storage::fake("data");
+
+        $response = $this->json("POST", "api/file-chunk", [
+            "key" => "a-uuid-string",
+            "chunk" => "abcdef"
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_saveFileChunk()
+    {
+        Storage::fake("data");
+
+        $response1 = $this->json("POST", "api/file-chunk", [
+            "key" => "a-uuid-string",
+            "chunk" => UploadedFile::fake()->createWithContent("ble.webm", "abcdef")
+        ]);
+        $response2 = $this->json("POST", "api/file-chunk", [
+            "key" => "a-uuid-string",
+            "chunk" => UploadedFile::fake()->createWithContent("ble.webm", "ghijkl")
+        ]);
+
+        $response1->assertOk();
+        $response1->assertJson(["status" => "ok"]);
+        $response2->assertOk();
+        Storage::disk("data")->assertExists("a-uuid-string/full.webm");
+        $this->assertEquals(
+            "abcdefghijkl",
+            Storage::disk("data")->get("a-uuid-string/full.webm")
+        );
+
     }
 }

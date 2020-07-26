@@ -23,3 +23,4 @@ Route::get("hello", function (Request $request) {
 });
 
 Route::post("files", "FilesController@saveFiles");
+Route::post("file-chunk", "FilesController@saveFileChunk");
