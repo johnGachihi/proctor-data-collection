@@ -25,7 +25,7 @@ jobs:
         run: |
           echo '${{ secrets.DOT_ENV }}' > .env
           # Temp. Debugging for whether .env file has been created
-          echo .env
+          cat .env
 
       - name: Run tests
         run: vendor/bin/phpunit tests
