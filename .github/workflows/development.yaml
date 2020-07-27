@@ -1,0 +1,56 @@
+name: Development workflow
+
+on:
+  push:
+    branches: creact-ci-workflow
+    path-ignore:
+      - '.editorconfig'
+      - '.env.example'
+      - '.gitattributes'
+      - '.gitignore'
+      - 'phpunit.xml'
+      - 'README.md'
+
+jobs:
+  configure-test-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install composer dependencies
+        run: composer install
+
+      - name: Setup .env file
+        run: echo ${{ secrets.DOT_ENV }} > .env
+
+      - name: Run tests
+        run: vendor/bin/phpunit tests
+
+      - name: Compress the source code
+        run: zip -r code.zip .
+
+      - name: Transfer source code to server
+        uses: appleboy/scp-action@master
+        with:
+          source: code.zip
+          target: proctor-test-backend.johngachihi.com
+          host: johngachihi.com
+          username: ${{ secrets.HOST_USERNAME }}
+          port: ${{ secrets.HOST_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+
+      - name: Extract code on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: johngachihi.com
+          username: ${{ secrets.HOST_USERNAME }}
+          port: ${{ secrets.HOST_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd proctor-test-backend.johngachihi.com
+            unzip -o code.zip
+            rm code.zip
+
