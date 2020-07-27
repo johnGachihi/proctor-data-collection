@@ -2,7 +2,7 @@ name: Development workflow
 
 on:
   push:
-    branches: creact-ci-workflow
+    branches: create-ci-workflow
     path-ignore:
       - '.editorconfig'
       - '.env.example'
