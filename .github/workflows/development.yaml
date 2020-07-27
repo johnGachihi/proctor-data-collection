@@ -22,7 +22,10 @@ jobs:
         run: composer install
 
       - name: Setup .env file
-        run: echo ${{ secrets.DOT_ENV }} > .env
+        run: |
+          echo ${{ secrets.DOT_ENV }} > .env
+          # Temp. Debugging for whether .env file has been created
+          echo .env
 
       - name: Run tests
         run: vendor/bin/phpunit tests
