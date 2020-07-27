@@ -24,14 +24,18 @@ class FilesController extends Controller
     {
         $request->validate([
             "key" => "required",
-            "files" => "required|array"
+            "files" => "required|array",
+            "files.*" => "file"
         ]);
     }
 
     private function storeFiles(string $folder, UploadedFile ...$files)
     {
         foreach ($files as $file) {
-            $file->storeAs($folder, $file->getClientOriginalName(), "data");
+//            $file->storeAs($folder, $file->getClientOriginalName(), "data");
+            $path = $folder . "/" . $file->getClientOriginalName();
+            $content = $file->get();
+            Storage::disk("data")->append($path, $content);
         }
     }
 
