@@ -31,7 +31,7 @@ jobs:
         run: vendor/bin/phpunit tests
 
       - name: Compress the source code
-        run: zip -r code.zip .
+        run: zip -r code.zip . -x '*storage*'
 
       - name: Transfer source code to server
         uses: appleboy/scp-action@master

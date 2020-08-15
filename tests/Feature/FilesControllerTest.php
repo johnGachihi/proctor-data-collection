@@ -120,6 +120,35 @@ class FilesControllerTest extends TestCase
             "abcdefghijkl",
             Storage::disk("data")->get("a-uuid-string/full.webm")
         );
+    }
 
+    public function test_downloadData_withUnknownKey()
+    {
+        $response = $this->json(
+            "GET", "/api/download-data/an-unknown-uuid-string");
+        $response->assertNotFound();
+    }
+
+    public function test_downloadData_whenDataFilesNotPresent()
+    {
+        Storage::fake("data");
+        Storage::disk("data")->makeDirectory("a-uuid-string");
+
+        $response = $this->json(
+            "GET", "/api/download-data/a-uuid-string");
+
+        $response->assertNotFound();
+        $response->assertJson(["error" => "Data files not found"]);
+    }
+
+    public function test_downloadData()
+    {
+        Storage::fake("data");
+        Storage::disk("data")->put("a-uuid-string/full.webm", "abcd");
+        Storage::disk("data")->put("a-uuid-string/click-log.txt", "abcd");
+
+        $response = $this->json("GET", "/api/download-data/a-uuid-string");
+
+        $response->assertOk();
     }
 }
